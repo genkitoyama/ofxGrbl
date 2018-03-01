@@ -22,25 +22,30 @@ void ofxGrbl::setup() {
 	serial.getDeviceList();
 	isConnect = false;
 	isDeviceReady = false;
-	port = "COM3";
-	baudrate = 115200;
+	port = "/dev/cu.usbmodem1441";
+    baudrate = 115200;
+//    baudrate = 9600;
 
 	// settings
-	//baudrateList.push_back("9600");
+//    baudrateList.push_back("9600");
 	//baudrateList.push_back("19200");
 	//baudrateList.push_back("38400");
 	//baudrateList.push_back("57600");
-	baudrateList.push_back("115200");
+    baudrateList.push_back("115200");
 
 	// mode
-	modeList.push_back("Spindle");
-	modeList.push_back("Laser");
+//    modeList.push_back("Spindle");
+//    modeList.push_back("Laser");
 	modeList.push_back("Plotter");
 
-	_settings.MaxSpeed = ofVec3f(10000,10000,10000);
-	_settings.Accel = ofVec3f(100, 100, 100);
-	_settings.FeedbackInterval = 10;
+	_settings.MaxSpeed = ofVec3f(30000,30000,30000);
+	_settings.Accel = ofVec3f(500, 500, 500);
+	_settings.FeedbackInterval = 5;
 	_settings.SpindleSpeed = 100;
+    
+    _settings.StepX = 60;
+    _settings.StepY = 60;
+    _settings.MaxTravel = ofVec3f(500,500,100);
 
 	if(bgColor == ofColor())bgColor = ofColor(40, 255);
 
@@ -49,7 +54,7 @@ void ofxGrbl::setup() {
 	initUI();
 	Connect();
 
-	color = ofColor::white;
+	color = ofColor(255,255,0);
 }
 
 //--------------------------------------------------------------
@@ -89,6 +94,7 @@ void ofxGrbl::update() {
 					}
 					if (readBuffer[0] == '<') {
 						// parse grbl state message
+                        
 						/*
 						vector<string> _status = ofSplitString(readBuffer, ",");
 						vector<string> _posx = ofSplitString(_status[1], ":");
@@ -98,34 +104,34 @@ void ofxGrbl::update() {
 						*/
 
 						readBuffer = readBuffer.substr(1, readBuffer.length() - 2);
-						vector<string> _status = ofSplitString(readBuffer, "|");
+                        vector<string> _status = ofSplitString(readBuffer, "|");
 						status = _status[0];
-						vector<string> _pos_str = ofSplitString(_status[1], ":");
-						vector<string> _pos = ofSplitString(_pos_str[1], ",");
-						cout << "[ ofxGrbl ] [ POSITION ] " << _pos[0] << ", " << _pos[1] << ", " << _pos[2] << endl;
+						vector<string> _pos_str = ofSplitString(_status[0], ":");
+                        vector<string> _pos = ofSplitString(_pos_str[1], ",");
+                        cout << "[ ofxGrbl ] [ POSITION ] " << _pos[0] << ", " << _pos[1] << ", " << _pos[2] << endl;
 						currentPos = ofVec3f(ofToFloat(_pos[0]) / (float)GRBL_WIDTH, ofToFloat(_pos[1]) / (float)GRBL_HEIGHT);
 						// Events
 						ofNotifyEvent(PositionEvent, currentPos);
-						if (ofToFloat(_pos[2]) < 0) {
-							if (!isDown) {
-								isDown = true;
-								cout << "[ ofxGrbl ] DOWN" << endl;
-								ofNotifyEvent(UpDownEvent, isDown);
-								ofxUILabelToggle *_toggle = (ofxUILabelToggle *)gui->getWidget("bSpindle");
-								_toggle->setValue(isDown);
+                        if (ofToFloat(_pos[2]) < 0) {
+                            if (!isDown) {
+                                isDown = true;
+                                cout << "[ ofxGrbl ] DOWN" << endl;
+                                ofNotifyEvent(UpDownEvent, isDown);
+                                ofxUILabelToggle *_toggle = (ofxUILabelToggle *)gui->getWidget("bSpindle");
+                                _toggle->setValue(isDown);
 
-								if (strokeList.size() > 1) strokeList.erase(strokeList.begin());
-							}
-						}
-						else {
-							if (isDown) {
-								isDown = false;
-								cout << "[ ofxGrbl ] UP" << endl;
-								ofNotifyEvent(UpDownEvent, isDown);
-								ofxUILabelToggle *_toggle = (ofxUILabelToggle *)gui->getWidget("bSpindle");
-								_toggle->setValue(isDown);
-							}
-						}
+                                if (strokeList.size() > 1) strokeList.erase(strokeList.begin());
+                            }
+                        }
+                        else {
+                            if (isDown) {
+                                isDown = false;
+                                cout << "[ ofxGrbl ] UP" << endl;
+                                ofNotifyEvent(UpDownEvent, isDown);
+                                ofxUILabelToggle *_toggle = (ofxUILabelToggle *)gui->getWidget("bSpindle");
+                                _toggle->setValue(isDown);
+                            }
+                        }
 					}
 					readBuffer = "";
 				}
@@ -173,12 +179,12 @@ void ofxGrbl::draw(int x, int y, int w, int h) {
 	ofFill();
 	ofSetLineWidth(3);
 
-	if (ofGetMousePressed(0)) {
-		//ofSetColor(color);
-		//ofDrawCircle((float)ofGetMouseX() / ofGetWidth() * WINDOW_WIDTH, (float)ofGetMouseY() / ofGetHeight() * WINDOW_HEIGHT, 15);
-		//ofSetColor(0, 255, 0);
-		//ofDrawBitmapString("X:" + ofToString(ofGetMouseX() / (float)ofGetWidth() * GRBL_WIDTH) + "\nY:" + ofToString(ofGetMouseY() / (float)ofGetHeight() * GRBL_HEIGHT), (float)ofGetMouseX() / ofGetWidth() * WINDOW_WIDTH + 20, (float)ofGetMouseY() / ofGetHeight() * WINDOW_HEIGHT + 20);
-	}
+//    if (ofGetMousePressed(0)) {
+//        ofSetColor(color);
+//        ofDrawCircle((float)ofGetMouseX() / ofGetWidth() * WINDOW_WIDTH, (float)ofGetMouseY() / ofGetHeight() * WINDOW_HEIGHT, 15);
+//        ofSetColor(0, 255, 0);
+//        ofDrawBitmapString("X:" + ofToString(ofGetMouseX() / (float)ofGetWidth() * GRBL_WIDTH) + "\nY:" + ofToString(ofGetMouseY() / (float)ofGetHeight() * GRBL_HEIGHT), (float)ofGetMouseX() / ofGetWidth() * WINDOW_WIDTH + 20, (float)ofGetMouseY() / ofGetHeight() * WINDOW_HEIGHT + 20);
+//    }
 
 	for (int i = 0; i < strokeList.size(); i++) {
 		ofPath line = ofPath();
@@ -274,7 +280,10 @@ void ofxGrbl::mouseDragged(int x, int y, int button) {
 	targetPos = ofVec3f((float)x / GRBL_WIDTH, (float)y / GRBL_HEIGHT);
 
 	// minimum move
-	if (ofDist(prevPos.x, prevPos.y, targetPos.x, targetPos.y) < 0.001f) {
+//    float min = 0.001f;
+    float min = 0.001f;
+    
+	if (ofDist(prevPos.x, prevPos.y, targetPos.x, targetPos.y) < min) {
 		cout << "Minimum move : " << ofDist(prevPos.x, prevPos.y, targetPos.x, targetPos.y) << endl;
 		return;
 	}
@@ -512,7 +521,7 @@ void ofxGrbl::initUI() {
 	gui->addSpacer(length - xInit, 2);
 	//gui->addWidgetDown(new ofxUILabel("SERIAL SETTINGS", OFX_UI_FONT_MEDIUM));
 	gui->addLabel("PORT_LABEL", "Serial Port");
-	gui->addTextInput("PORT", "COM3");
+	gui->addTextInput("PORT", port);
 	//gui->addLabel("BAUDRATE_LABEL", "BAUDRATE");
 	//gui->addRadio("BAUDRATE", baudrateList);
 	gui->addLabelButton("CONNECT", false);
@@ -818,6 +827,10 @@ void ofxGrbl::setSettings() {
 	}
 	// set spindle speed
 	sendMessage("S" + ofToString((int)_settings.SpindleSpeed));
+    
+    //set step num
+    sendMessage("$100=" + ofToString(_settings.StepX, 4));
+    sendMessage("$101=" + ofToString(_settings.StepY, 4));
 
 	// set max speed
 	sendMessage("F" + ofToString(_settings.MaxSpeed.x, 4));
@@ -842,7 +855,7 @@ void ofxGrbl::setArea(float x, float y, float z) {
 	GRBL_HEIGHT = y;
 	GRBL_DEPTH = z;
 
-	ofSetWindowShape(GRBL_WIDTH, GRBL_HEIGHT);
+    ofSetWindowShape(GRBL_WIDTH, GRBL_HEIGHT);
 
 	WINDOW_WIDTH = ofGetWidth();
 	WINDOW_HEIGHT = ofGetHeight();
@@ -859,7 +872,7 @@ void ofxGrbl::setHome(ofVec3f _homePos) {
 }
 
 void ofxGrbl::setSpindle(bool _enable, bool _direct) {
-	cout << "[ ofxGrbl ] setArea(" << _enable << ", " << _direct << ")" << endl;
+	cout << "[ ofxGrbl ] setSpindle(" << _enable << ", " << _direct << ")" << endl;
 	bSpindle = _enable;
 	if (bSpindle) {
 		sendMessage("M3", _direct);

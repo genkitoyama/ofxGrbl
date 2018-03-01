@@ -6,9 +6,11 @@ void ofApp::setup(){
 	ofSetFrameRate(60);
 	ofSetBackgroundColor(40);
 
-	_font.loadFont("./GUI/NewMedia Fett.ttf", 20);
+	_font.load("./GUI/NewMedia Fett.ttf", 20);
 
 	grbl.setup();
+//    grbl.Connect("/dev/cu.usbmodem1451", 115200);
+    
 	ofAddListener(grbl.UpDownEvent, this, &ofApp::UpDownHandler);
 }
 

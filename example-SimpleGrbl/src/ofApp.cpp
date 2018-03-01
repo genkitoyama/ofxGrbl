@@ -3,17 +3,19 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	grbl.setup();
-	grbl.Connect("COM3", 115200);
+//    grbl.Connect("/dev/cu.usbmodem1451", 115200);
 
 	// set position directly
-	grbl.setPosition(300, 100);
-	grbl.setPosition(900, 100);
-	grbl.setPosition(900, 600);
-	grbl.setPosition(300, 600);
-	grbl.setPosition(300, 100);
+//    grbl.setPosition(300, 100);
+//    grbl.setPosition(900, 100);
+//    grbl.setPosition(900, 600);
+//    grbl.setPosition(300, 600);
+//    grbl.setPosition(300, 100);
 
 	// move from stroke file
-	grbl.loadFromFile("./star.gcode");
+//    grbl.loadFromFile("./star.gcode");
+    
+    grbl.toggleVisible();
 
 }
 
@@ -36,6 +38,9 @@ void ofApp::exit() {
 void ofApp::keyPressed(int key){
 	switch (key)
 	{
+    case ' ':
+        grbl.resetStrokes();
+        break;
 	case OF_KEY_RETURN:
 		grbl.toggleVisible();
 		break;
@@ -46,10 +51,12 @@ void ofApp::keyPressed(int key){
 		grbl.moveLeft(10);
 		break;
 	case OF_KEY_UP:
-		grbl.moveDown(10);
+		grbl.moveUp(10);
+        grbl.moveRight(10);
 		break;
 	case OF_KEY_DOWN:
-		grbl.moveUp(10);
+		grbl.moveDown(10);
+        grbl.moveLeft(10);
 		break;
 	default:
 		break;
